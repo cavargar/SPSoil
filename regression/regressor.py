@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Nov  3 19:24:37 2020
-
-@author: ddelgadillo
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,13 +24,9 @@ import six
 import regplots as rgp
 from sklearn.cross_decomposition import PLSRegression
 
-#otrosCompuestos = ['pH','OM', 'Ca', 'Mg', 'K','Na']
+otrosCompuestos = ['pH','OM', 'Ca', 'Mg', 'K','Na']
 otrosCompuestos = ['Ca']
-#otrosCompuestos = ['K','Na']
-#otrosCompuestos = ['Mg']
-#otrosCompuestos = ['pH']
-#av_models = ['LR']
-#av_models = ['LR']
+
 av_models = ['LR', 'SVR','LASSO']
 
 
@@ -47,9 +38,8 @@ bestBandMetric = pd.DataFrame({'property':[],
                         })
 
 
-compuesto = otrosCompuestos[0]
 for compuesto in otrosCompuestos:
-    propMetrics = pd.read_csv('metricas_propiedad/metricas_' + str(compuesto) + '.csv',sep = ';', decimal = '.')
+    propMetrics = pd.read_csv('../feature_metrics/metrics_' + str(compuesto) + '.csv',sep = ';', decimal = '.')
     
     metrics = list(propMetrics.columns)
     metrics.remove('feature')
@@ -87,8 +77,8 @@ compuesto = otrosCompuestos[0]
 for compuesto in otrosCompuestos:
     
     
-    trainFName = 'data/Train_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
-    testFName = 'data/Test_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
+    trainFName = '../data/Train_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
+    testFName = '../data/Test_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
     
     
     testDF = pd.read_csv(testFName, sep = ';')
@@ -135,17 +125,6 @@ for compuesto in otrosCompuestos:
     
     y_test_plsr = y_test.copy()
     X_test_plsr = X_test.copy()
-    
-    
-    ##########################################################################    
-    #crrntCompMetrics = [str(compuesto), str(crrntPropBands['metric'][0]), str(crrntPropBands['Score'][0]), str(crrntPropBands['BestBand'][0])]
-    
-
-    #crrntCompMetricsBest = [str(compuesto), str(crrntPropBands['metric'][0]), str(crrntPropBands['Score'][0]), str(best_bands)]
-
-
-
-
 
     for model_text in av_models:
         if model_text == 'LR':
@@ -218,12 +197,10 @@ for compuesto in otrosCompuestos:
             cc = np.corrcoef(y_train_plsr, y_prd_train_plsr[:,0])
             cc = cc[0,1]
             cc_train_plsr = cc.round(3)
-            #crrntCompMetrics.append(cc_train)
             
             cc = np.corrcoef(y_test_plsr, y_prd_test_plsr[:,0])
             cc = cc[0,1]
             cc_test_plsr = cc.round(3)
-            #crrntCompMetrics.append(cc_test)    
     
         ########################## METRICS ###################################        
             crrntPropMetrics = [str(compuesto),#Property
@@ -266,10 +243,10 @@ for compuesto in otrosCompuestos:
                                 ]
             print(crrntPropMetrics)
             plotName = 'Regression performance on ' + str(compuesto) + ' for test dataset with ' + str(model_text) + ', PLSR ' + str(nc) + ' components' 
-            rgp.regPlotBest3(compuesto, y_test, y_prd_test, y_test_band, y_prd_test_band, y_test_plsr, y_prd_test_plsr, model_text, plotName, nc, save = True)
+            #rgp.regPlotBest3(compuesto, y_test, y_prd_test, y_test_band, y_prd_test_band, y_test_plsr, y_prd_test_plsr, model_text, plotName, nc, save = True)
 
             plotName = 'Regression performance on ' + str(compuesto) + ' for train dataset with ' + str(model_text) + ', PLSR ' + str(nc) + ' components'
-            rgp.regPlotBest3(compuesto, y_train, y_prd_train , y_train_band, y_prd_train_band, y_train_plsr, y_prd_train_plsr, model_text, plotName, nc, save = True)
+            #rgp.regPlotBest3(compuesto, y_train, y_prd_train , y_train_band, y_prd_train_band, y_train_plsr, y_prd_train_plsr, model_text, plotName, nc, save = True)
   
             metricsDF.loc[metricsDF.shape[0] + 1] = crrntPropMetrics
 
