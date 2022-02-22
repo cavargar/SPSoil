@@ -1,2 +1,4 @@
 # SPSoil
 Repository for our spectral based estimation of soil properties. Planning to add codes, data, and latest version of our paper.
+
+Knowing chemical soil properties might be determinant in crop management and total yield production. Traditional approaches for property estimation are time-consuming and require complex lab setups, refraining farmers from taking steps towards optimal practices in their crops promptly. Property estimation from spectral signals emerged as a low-cost, non-invasive, and non-destructive alternative. Current approaches use regression, excluding tools from the machine learning framework. Here we test both regression and classification machine techniques and assess performance on common prediction metrics. We achieved similar performance on similar setups reported in literature.
