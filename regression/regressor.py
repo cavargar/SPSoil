@@ -1,33 +1,61 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import pandas as pd
-from itertools import cycle
-import seaborn as sns
+#from itertools import cycle
+#import seaborn as sns
 
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
-from scipy import interp
-from sklearn.metrics import roc_auc_score
 from sklearn.metrics import mean_squared_error, r2_score, explained_variance_score
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import cross_validate
-from sklearn.multioutput import MultiOutputRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.neural_network import MLPRegressor
 from sklearn.svm import SVR
 from sklearn.linear_model import LassoCV
-from sklearn.utils import resample
-from pickle import dump
-import six
-import regplots as rgp
+#import regplots as rgp
 from sklearn.cross_decomposition import PLSRegression
 
-otrosCompuestos = ['pH','OM', 'Ca', 'Mg', 'K','Na']
-otrosCompuestos = ['Ca']
 
-av_models = ['LR', 'SVR','LASSO']
+import argparse
+
+parser = argparse.ArgumentParser(description='Pre processing of NIRS data.')
+parser.add_argument('-p', '--properties', type=str,
+                    help='Space separated list of properties in "quotes", must be contained in properties data set header')
+parser.add_argument('-m', '--models', type=str,
+                    help='Space separated regression models, available: LR, SVR,LASSO')
+parser.add_argument('-f', '--featureM', type=str,
+                    help='path feature metrics')
+parser.add_argument('-d', '--data', type=str,
+                    help='path of pre processed data')
+
+
+
+args = parser.parse_args()
+
+def argTolist(argStr, num = False):
+    l = []
+    for t in argStr.split():
+        if num:
+            l.append(float(t))
+        else:
+            l.append(str(t))
+    return l
+
+
+print(args.properties)
+print(argTolist(args.properties))
+print(args.models)
+print(argTolist(args.models))
+
+
+
+otrosCompuestos = argTolist(args.properties)
+av_models = argTolist(args.models)
+
+#otrosCompuestos = ['pH','OM', 'Ca', 'Mg', 'K','Na']
+#otrosCompuestos = ['Ca']
+
+#av_models = ['LR', 'SVR','LASSO']
 
 
 
@@ -39,7 +67,7 @@ bestBandMetric = pd.DataFrame({'property':[],
 
 
 for compuesto in otrosCompuestos:
-    propMetrics = pd.read_csv('../feature_metrics/metrics_' + str(compuesto) + '.csv',sep = ';', decimal = '.')
+    propMetrics = pd.read_csv(args.featureM + 'metrics_' + str(compuesto) + '.csv',sep = ';', decimal = '.')
     
     metrics = list(propMetrics.columns)
     metrics.remove('feature')
@@ -77,8 +105,8 @@ compuesto = otrosCompuestos[0]
 for compuesto in otrosCompuestos:
     
     
-    trainFName = '../data/Train_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
-    testFName = '../data/Test_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
+    trainFName =args.data + 'Train_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
+    testFName = args.data + 'Test_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
     
     
     testDF = pd.read_csv(testFName, sep = ';')
@@ -249,4 +277,4 @@ for compuesto in otrosCompuestos:
             #rgp.regPlotBest3(compuesto, y_train, y_prd_train , y_train_band, y_prd_train_band, y_train_plsr, y_prd_train_plsr, model_text, plotName, nc, save = True)
   
             metricsDF.loc[metricsDF.shape[0] + 1] = crrntPropMetrics
-
+            metricsDF.to_csv(args.data + '/Regressor-metrics.csv', index=False, header=True, sep = ';', decimal = '.')

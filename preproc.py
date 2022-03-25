@@ -8,32 +8,77 @@ from sklearn.preprocessing import PowerTransformer, QuantileTransformer
 from findiff import FinDiff
 from sklearn.model_selection import train_test_split
 from pickle import dump
-from sklearn.utils import resample
-import csv
-import os
-import matplotlib.pyplot as plt
+import argparse
+
+parser = argparse.ArgumentParser(description='Pre processing of NIRS data.')
+parser.add_argument('-d', '--data', type=str,
+                    help='Full NIRS data path, must be CSV formatted, and ; separated')
+parser.add_argument('-t', '--threshold', type=str,
+                    help='full thresholds table data set, must be CSV formatted, and ; separated')
+parser.add_argument('-p', '--properties', type=str,
+                    help='Space separated list of properties in "quotes", must be contained in properties data set header')
+parser.add_argument('-s', '--step', type=str,
+                    help='Space separated steps in NIRS spectrum (float or INT), begin step end')
 
 
-df = pd.read_csv('data/soil_cane_vis-NIR.csv' ,sep = ';', decimal = '.')
-umbrales = pd.read_csv('data/properties_thresholds.csv' ,sep = ';', decimal = '.')
-otrosCompuestos = ['pH_3Cat','pH','OM', 'Ca', 'Mg', 'K', 'Na']
+
+args = parser.parse_args()
+
+def argTolist(argStr, num = False):
+    l = []
+    for t in argStr.split():
+        if num:
+            l.append(float(t))
+        else:
+            l.append(str(t))
+    return l
+
+print(args.data)
+print(args.threshold)
+print(args.properties)
+print(argTolist(args.properties))
+print(args.step)
+print(argTolist(args.step, True))
+
+
+#df = pd.read_csv('data/soil_cane_vis-NIR.csv' ,sep = ';', decimal = '.')
+df = pd.read_csv(args.data ,sep = ';', decimal = '.')
+#umbrales = pd.read_csv('data/properties_thresholds.csv' ,sep = ';', decimal = '.')
+umbrales = pd.read_csv(args.threshold ,sep = ';', decimal = '.')
+#otrosCompuestos = ['pH_3Cat','pH','OM', 'Ca', 'Mg', 'K', 'Na']
+otrosCompuestos = argTolist(args.properties)
+
+steps = argTolist(args.step, True)
+
+e = []
+x = []
+for i in np.arange(steps[0],steps[2],steps[1]):
+    if i-int(i) == 0:
+        e.append(str(int(i)))
+        x.append(int(i))
+    else:
+        e.append(str(i))
+        x.append(i)
 
 #scalers = ['minmax', 'standard', 'powertrans','quantile']
 #scalers = ['minmax','standard']
 scalers = ['minmax']
 
+
+
 for avScaler in scalers:
 
     espectro = df.copy()
-    espectro = espectro.drop(otrosCompuestos, axis=1)
-    espectro = espectro.drop(['Sand','Clay','Silt'], axis=1)
+    espectro=espectro[e]
+    #espectro = espectro.drop(otrosCompuestos, axis=1)
+    #espectro = espectro.drop(['Sand','Clay','Silt'], axis=1)
     
     Sand = df.Sand
     Clay = df.Clay
     Silt = df.Silt
     
     DFCompuestos = df.copy()
-    DFCompuestos = DFCompuestos.iloc[:,3:10]
+    DFCompuestos = DFCompuestos[otrosCompuestos]
                   
     aespectro = np.asarray(espectro)    
     X = list(espectro.columns)
@@ -86,8 +131,8 @@ for avScaler in scalers:
         scalerd2 = QuantileTransformer()
         sc_l = QuantileTransformer()
         
-    x = np.arange(400,2492,8.5)
-
+    #x = np.arange(400,2492,8.5)
+    x = np.arange(steps[0],steps[2],steps[1])
     scalerEspectro.fit(aespectro)
     scalerd1.fit(ad1)
     scalerd2.fit(ad2)
