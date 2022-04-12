@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import pandas as pd
-#from itertools import cycle
-#import seaborn as sns
-
+import seaborn as sns
 from sklearn.metrics import mean_squared_error, r2_score, explained_variance_score
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import cross_validate
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
 from sklearn.linear_model import LassoCV
-#import regplots as rgp
 from sklearn.cross_decomposition import PLSRegression
-
-
+from joblib import dump, load
 import argparse
 
 parser = argparse.ArgumentParser(description='Pre processing of NIRS data.')
@@ -47,6 +43,41 @@ print(argTolist(args.properties))
 print(args.models)
 print(argTolist(args.models))
 
+def regPlotBest(compuesto, y_test, y_pred, y_test_band, y_pred_band, y_test_plsr, y_pred_plsr, model_text, plotName, nc, savePath, save = False):    
+    fig = plt.figure(figsize=(7, 5), dpi=500)
+    ax = fig.add_subplot()
+       
+    if model_text == 'LASSO':
+        bands_legend = 'Lasso selected'    
+    else:
+        bands_legend = 'All features'
+    
+    x_label = 'True'
+    y_label = 'Predicted'
+    sns.regplot(x=y_test, y=y_pred, scatter_kws = {'color': 'red', 'alpha': 0.4, 's':6.5}, line_kws = {'color': 'red', 'alpha': 1, 'lw':1.2}, label = bands_legend)
+    sns.regplot(x=y_test_band, y=y_pred_band, scatter_kws = {'color': 'blue', 'alpha': 0.4, 's':6.5}, line_kws = {'color': 'blue', 'alpha': 1, 'lw':1.2}, label = 'Best feature')
+    sns.regplot(x=y_test_plsr, y=y_pred_plsr, scatter_kws = {'color': 'green', 'alpha': 0.4, 's':6.5}, line_kws = {'color': 'green', 'alpha': 1, 'lw':1.2}, label = 'PLSR, ' + str(nc) + ' components')
+
+    plt.plot(ls = '--', color = 'black', label = 'Reference', linewidth = 0.7)
+    plt.title(plotName, fontdict = {'fontsize': 12})
+    plt.xlabel(x_label, fontdict = {'fontsize': 12})
+    plt.ylabel(y_label, fontdict = {'fontsize': 12})
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=4, fontsize = 12)
+
+    ax.xaxis.set_tick_params(labelsize=12)
+    ax.yaxis.set_tick_params(labelsize=12)
+    ax.xaxis.set_major_locator(plt.MaxNLocator(4))
+    ax.yaxis.set_major_locator(plt.MaxNLocator(4))
+    plt.legend(loc=2, fontsize = 8)
+    if save:
+        nameExport = plotName.replace(' ','_')
+        pngp = savePath + nameExport + '.png'
+        svgp = savePath + nameExport + '.svg'
+        plt.savefig(pngp, dpi = 500)
+        #plt.savefig(svgp, dpi = 500)
+        #plt.savefig(nameExport + '.pdf', dpi = 900)
+        #plt.show()
+    return
 
 
 otrosCompuestos = argTolist(args.properties)
@@ -180,6 +211,8 @@ for compuesto in otrosCompuestos:
 
         ######################################################################
         regressor = model.fit(X_train, y_train)
+        dump(regressor, 'models/model-' + str(compuesto) + "-allFeatures-" + str(model_text) + ".joblib")
+        
         scores =cross_validate(model,X_train, y_train, scoring = scoring) 
         
         y_prd_train = regressor.predict(X_train)
@@ -189,6 +222,7 @@ for compuesto in otrosCompuestos:
     
         ######################################################################        
         regressor_band = model_band.fit(X_train_band, y_train_band)
+        dump(regressor, 'models/model-' + str(compuesto) + "-bestBand-" + str(model_text) + ".joblib")
         scores_band =cross_validate(model_band,X_train_band, y_train_band,scoring = scoring) 
                     
         y_prd_train_band = regressor_band.predict(X_train_band)
@@ -215,7 +249,8 @@ for compuesto in otrosCompuestos:
         
         for nc in range(2,7):    
             model_plsr =  PLSRegression(n_components=nc)
-                
+            if nc == 6:
+                dump(regressor, 'models/model-' + str(compuesto) + "-PLSR6" + ".joblib")
             regressor_plsr = model_plsr.fit(X_train_plsr, y_train_plsr)
             scores_plsr =cross_validate(model_plsr,X_train_plsr, y_train_plsr,scoring = scoring) 
 
@@ -271,10 +306,12 @@ for compuesto in otrosCompuestos:
                                 ]
             print(crrntPropMetrics)
             plotName = 'Regression performance on ' + str(compuesto) + ' for test dataset with ' + str(model_text) + ', PLSR ' + str(nc) + ' components' 
-            #rgp.regPlotBest3(compuesto, y_test, y_prd_test, y_test_band, y_prd_test_band, y_test_plsr, y_prd_test_plsr, model_text, plotName, nc, save = True)
+            regPlotBest(compuesto, y_test, y_prd_test, y_test_band, y_prd_test_band, y_test_plsr, y_prd_test_plsr, model_text, plotName, nc, "results/", save = True)
 
             plotName = 'Regression performance on ' + str(compuesto) + ' for train dataset with ' + str(model_text) + ', PLSR ' + str(nc) + ' components'
-            #rgp.regPlotBest3(compuesto, y_train, y_prd_train , y_train_band, y_prd_train_band, y_train_plsr, y_prd_train_plsr, model_text, plotName, nc, save = True)
+            regPlotBest(compuesto, y_train, y_prd_train , y_train_band, y_prd_train_band, y_train_plsr, y_prd_train_plsr, model_text, plotName, nc, "results/", save = True)
   
             metricsDF.loc[metricsDF.shape[0] + 1] = crrntPropMetrics
             metricsDF.to_csv(args.data + '/Regressor-metrics.csv', index=False, header=True, sep = ';', decimal = '.')
+
+

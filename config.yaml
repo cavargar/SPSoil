@@ -9,6 +9,7 @@ data:
     - soil_cane_vis-NIR.csv
   #Thresholds table data set
   # must be CSV formatted with ';' column separator  
+  # CASO Clasificacion OPCIONAL
   thresholdsPath:
     - data/properties_thresholds.csv
 properties:
@@ -23,3 +24,4 @@ NIRSInfo:
 Regression:
   models:
     - LR
+    #- LR SVR LASSO

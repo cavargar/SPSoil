@@ -9,6 +9,7 @@ from findiff import FinDiff
 from sklearn.model_selection import train_test_split
 from pickle import dump
 import argparse
+from joblib import dump, load
 
 parser = argparse.ArgumentParser(description='Pre processing of NIRS data.')
 parser.add_argument('-d', '--data', type=str,
@@ -137,12 +138,17 @@ for avScaler in scalers:
     scalerd1.fit(ad1)
     scalerd2.fit(ad2)
     
+    dump(scalerEspectro, 'scalers/spectrum-' + str(avScaler) + ".joblib")
+    dump(scalerd1, 'scalers/d1-' + str(avScaler) + ".joblib")
+    dump(scalerd1, 'scalers/d2-' + str(avScaler) + ".joblib")
+    
     scEspectro = scalerEspectro.transform(aespectro)
     scad1 = scalerd1.transform(ad1)
     scad2 = scalerd2.transform(ad2)
-        
+    
     
     absfft = np.absolute(afft)/int(afft.shape[1])
+    np.savetxt("scalers/fft.csv", absfft, delimiter=";")
     allData = np.concatenate((scEspectro, scad1, scad2, absfft), axis = 1)
     
     allDataColumns = []
@@ -177,6 +183,9 @@ for avScaler in scalers:
         
         labels = np.array(labels).reshape(-1,1)
         sc_l.fit(labels)
+        
+        dump(sc_l, 'scalers/' + str(compuesto) + "-" + str(avScaler) + ".joblib")
+        
         scLabels = sc_l.transform(labels)
         scLabels = scLabels.flatten()
         labels = labels.flatten()

@@ -14,14 +14,21 @@ def readYaml():
         config = yaml.safe_load(f)
  
     return config
- 
+
+def createPath(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
 if __name__ == "__main__":
- 
-    # read the config yaml
+
+    
+
     config = readYaml()
  
-    # pretty print my_config
-    #pprint.pprint(config)
+    createPath("models")
+    createPath("scalers")
+    createPath("results")
+    
     
     preProc = "python preproc.py -d " + str(config['data']['dataPath'][0]) + str(config['data']['dataFile'][0]) + " -t " + str(config['data']['thresholdsPath'][0]) + ' -p "' + str(config['properties'][0]) + '" -s "' + str(config['NIRSInfo']['steps'][0]) + '"' 
     print(preProc)
@@ -32,3 +39,5 @@ if __name__ == "__main__":
     print(regressor)
     os.system(regressor)
     #python .\regression\regressor.py -p "Ca" -m "LR" -f feature_metrics\ -d data\
+        
+    

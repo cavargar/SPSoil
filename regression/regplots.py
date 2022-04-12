@@ -102,7 +102,7 @@ def regPlotBest(y_test, y_pred, y_test_band, y_pred_band, y_test_best, y_pred_be
     plt.legend(loc=2, fontsize = 8)
     ax.set_xlim(3.5, 8.5)
     ax.set_ylim(3.5, 8.5)
-   plt.yticks([4,5,6,7,8])
+    plt.yticks([4,5,6,7,8])
     plt.xticks([4,5,6,7,8])
     ax.xaxis.set_tick_params(labelsize=8)
     ax.yaxis.set_tick_params(labelsize=8)
@@ -306,7 +306,7 @@ def regPlotBest3(compuesto, y_test, y_pred, y_test_band, y_pred_band, y_test_pls
 
 
 
-def regPlotSingle(y_test, y_pred, plotName, plotType = 'PLSR', save = False):
+def regPlotSingle(y_test, y_pred, plotName, plotType = 'PLSR', savePath, save = False):
 
     r2 = r2_score(y_test , y_pred) 
     cc = np.corrcoef(y_test , y_pred)[0,1]
@@ -358,4 +358,47 @@ def regPlotSingle(y_test, y_pred, plotName, plotType = 'PLSR', save = False):
         plt.savefig(nameExport + '.pdf', dpi = 900, quality = 100)
         plt.show()
 
+    return
+
+
+def regPlotBest4(compuesto, y_test, y_pred, y_test_band, y_pred_band, y_test_plsr, y_pred_plsr, model_text, plotName, nc, save = False):    
+    fig = plt.figure(figsize=(7, 5), dpi=500)
+    ax = fig.add_subplot()
+    
+    
+    if model_text == 'LASSO':
+        bands_legend = 'Lasso selected'    
+    else:
+        bands_legend = 'All features'
+    
+    x_label = 'True'
+    y_label = 'Predicted'
+
+
+               
+    sns.regplot(x=y_test, y=y_pred, scatter_kws = {'color': 'red', 'alpha': 0.4, 's':6.5}, line_kws = {'color': 'red', 'alpha': 1, 'lw':1.2}, label = bands_legend)
+    sns.regplot(x=y_test_band, y=y_pred_band, scatter_kws = {'color': 'blue', 'alpha': 0.4, 's':6.5}, line_kws = {'color': 'blue', 'alpha': 1, 'lw':1.2}, label = 'Best feature')
+    sns.regplot(x=y_test_plsr, y=y_pred_plsr, scatter_kws = {'color': 'green', 'alpha': 0.4, 's':6.5}, line_kws = {'color': 'green', 'alpha': 1, 'lw':1.2}, label = 'PLSR, ' + str(nc) + ' components')
+
+    plt.plot(ls = '--', color = 'black', label = 'Reference', linewidth = 0.7)
+    plt.title(plotName, fontdict = {'fontsize': 12})
+    plt.xlabel(x_label, fontdict = {'fontsize': 12})
+    plt.ylabel(y_label, fontdict = {'fontsize': 12})
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=4, fontsize = 12)
+    
+    #tcks = np.arange(int(min(y_test)), max(y_test), 1.5)
+
+    ax.xaxis.set_tick_params(labelsize=12)
+    ax.yaxis.set_tick_params(labelsize=12)
+    ax.xaxis.set_major_locator(plt.MaxNLocator(4))
+    ax.yaxis.set_major_locator(plt.MaxNLocator(4))
+    
+    if save:
+        nameExport = plotName.replace(' ','_')
+        pngp = savePath + nameExport + '.png'
+        svgp = savePath + nameExport + '.svg'
+        plt.savefig(pngp, dpi = 500, quality = 100)
+        plt.savefig(svgp, dpi = 500, quality = 100)
+        plt.savefig(nameExport + '.pdf', dpi = 900, quality = 100)
+        plt.show()
     return

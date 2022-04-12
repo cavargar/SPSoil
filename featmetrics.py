@@ -2,17 +2,46 @@
 
 import numpy as np
 import pandas as pd
-from sklearn.feature_selection import VarianceThreshold, SelectFromModel, SelectKBest, SelectPercentile, chi2, mutual_info_classif, mutual_info_regression
+from sklearn.feature_selection import VarianceThreshold, SelectKBest, SelectPercentile, mutual_info_regression
 from sklearn.linear_model import LassoCV
 from sklearn.feature_selection import f_regression
+import argparse
 
 
-otrosCompuestos = ['pH','OM', 'Ca', 'Mg', 'K','Na']
+
+
+
+parser = argparse.ArgumentParser(description='Pre processing of NIRS data.')
+parser.add_argument('-d', '--data', type=str,
+                    help='Full NIRS data path, must be CSV formatted, and ; separated')
+parser.add_argument('-p', '--properties', type=str,
+                    help='Space separated list of properties in "quotes", must be contained in properties data set header')
+args = parser.parse_args()
+
+def argTolist(argStr, num = False):
+    l = []
+    for t in argStr.split():
+        if num:
+            l.append(float(t))
+        else:
+            l.append(str(t))
+    return l
+
+
+print(args.properties)
+print(argTolist(args.properties))
+otrosCompuestos = argTolist(args.properties)
+
+#otrosCompuestos = ['pH','OM', 'Ca', 'Mg', 'K','Na']
+
+
+
+
 
 
 for compuesto in otrosCompuestos:
-    trainFName = 'data/Train_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
-    testFName = 'data/Test_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
+    trainFName = args.data + 'Train_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
+    testFName = args.data + 'Test_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
     
     
     testDF = pd.read_csv(testFName, sep = ';')
