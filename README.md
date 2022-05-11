@@ -1,4 +1,12 @@
 # SPSoil
-Repository for our spectral based estimation of soil properties. Planning to add codes, data, and latest version of our paper.
+Repository for our spectral based estimation of soil properties. 
 
-Knowing chemical soil properties might be determinant in crop management and total yield production. Traditional approaches for property estimation are time-consuming and require complex lab setups, refraining farmers from taking steps towards optimal practices in their crops promptly. Property estimation from spectral signals emerged as a low-cost, non-invasive, and non-destructive alternative. Current approaches use regression, excluding tools from the machine learning framework. Here we test both regression and classification machine techniques and assess performance on common prediction metrics. We achieved similar performance on similar setups reported in literature.
+## Regression
+In the regression folder you will find the python code, example data and instructions to install and run the code.
+
+## Classification 
+In the regression folder you will find the MATLAB code, example data and instructions to run the code.
+
+## Citation:
+
+Delgadillo-Duran, Diego A. and Vargas-García, Cesar A. and Varón-Ramírez, Viviana M. and Calderón, Francisco and Montenegro, Andrea C. and Reyes-Herrera, Paula H. Using vis-NIRS and ML to diagnose properties in colombian sugarcane soils (2022) arXiv. https://arxiv.org/abs/2012.12995
