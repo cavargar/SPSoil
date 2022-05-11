@@ -1,0 +1,27 @@
+#SPSoil Regreession config.yaml file
+
+data:
+  #NIRS spectrum and properties data path for output and input data
+  # input dataset must be CSV formatted with ';' column separator
+  dataPath:
+    - data/
+  dataFile:
+    - soil_cane_vis-NIR.csv
+  #Thresholds table data set
+  # must be CSV formatted with ';' column separator  
+  # CASO Clasificacion OPCIONAL
+  thresholdsPath:
+    - data/properties_thresholds.csv
+properties:
+    # Space separated properties, must be contained in properties data set header
+  - pH OM
+  #- pH OM Ca Mg K Na
+NIRSInfo:
+  steps:
+    # Space separated steps in NIRS spectrum (float or INT)
+    # begin step end
+    - 400 8.5 2492
+Regression:
+  models:
+    - LR
+    #- LR SVR LASSO
