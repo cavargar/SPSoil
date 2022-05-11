@@ -1,11 +1,11 @@
 # SPSoil
-Repository for our spectral based estimation of soil properties. 
+Repository for our spectral based estimation of soil properties using regression and classification. 
 
-## Regression
+## Regression:
 In the regression folder you will find the python code, example data and instructions to install and run the code.
 
-## Classification 
-In the regression folder you will find the MATLAB code, example data and instructions to run the code.
+## Classification: 
+In the classification folder you will find the MATLAB code, example data for MATLAB and instructions to run the code.
 
 ## Citation:
 
