@@ -17,7 +17,7 @@ git clone https://github.com/cavargar/SPSoil
 3. Change working directory to `SPSoil`
 
 ```
-cd SPSoil
+cd SPSoil/Regression
 ```
 
 4. Create a conda environment from spsoil.yaml file:
@@ -53,7 +53,7 @@ NIRSInfo:
     - 400 8.5 2492
 Regression:
   models:
-	# Available LR, SVR, LASSO
+	# Available LR, SVR, LASSO, Cubist
     - LR SVR
 
 ```
