@@ -13,6 +13,7 @@ from sklearn.linear_model import LassoCV
 from sklearn.cross_decomposition import PLSRegression
 from joblib import dump, load
 import argparse
+from cubist import Cubist
 
 parser = argparse.ArgumentParser(description='Pre processing of NIRS data.')
 parser.add_argument('-p', '--properties', type=str,
@@ -95,7 +96,7 @@ bestBandMetric = pd.DataFrame({'property':[],
                          'BestBand':[],
                          'Score':[]
                         })
-
+#compuesto='pH'
 
 for compuesto in otrosCompuestos:
     propMetrics = pd.read_csv(args.featureM + 'metrics_' + str(compuesto) + '.csv',sep = ';', decimal = '.')
@@ -115,7 +116,27 @@ for compuesto in otrosCompuestos:
 
 bestBandMetric = bestBandMetric[bestBandMetric.metric == 'Correlation']
 
-metricsDF = pd.DataFrame({'Property' : [], 'Model':[], 'Best_Band':[], 'PLSR N Compnts':[],
+# metricsDF = pd.DataFrame({'Property' : [], 'Model':[], 'Best_Band':[], 'PLSR N Compnts':[],
+#                           'CC Train All': [], 'CC Test All': [],
+#                           'MSE Train All': [], 'MSE CV All': [], 'MSE Test All': [], 
+#                           'R2 Train All': [], 'R2 CV All': [], 'R2 Test All': [],
+#                           'EV Train All': [], 'EV CV All': [], 'EV Test All': [], 
+#                           'CC Train Band': [], 'CC Test Band': [],
+#                           'MSE Train Band': [], 'MSE CV Band': [], 'MSE Test Band': [], 
+#                           'R2 Train Band': [], 'R2 CV Band': [], 'R2 Test Band': [],
+#                           'EV Train Band': [], 'EV CV Band': [], 'EV Test Band': [], 
+#                           'CC Train PLSR': [], 'CC Test PLSR': [],
+#                           'MSE Train PLSR': [], 'MSE CV PLSR': [], 'MSE Test PLSR': [], 
+#                           'R2 Train PLSR': [], 'R2 CV PLSR': [], 'R2 Test PLSR': [],
+#                           'EV Train PLSR': [], 'EV CV PLSR': [], 'EV Test PLSR': []
+#                           })
+
+
+
+compuesto = otrosCompuestos[0]
+for compuesto in otrosCompuestos:
+    
+    metricsDF = pd.DataFrame({'Property' : [], 'Model':[], 'Best_Band':[], 'PLSR N Compnts':[],
                           'CC Train All': [], 'CC Test All': [],
                           'MSE Train All': [], 'MSE CV All': [], 'MSE Test All': [], 
                           'R2 Train All': [], 'R2 CV All': [], 'R2 Test All': [],
@@ -130,12 +151,6 @@ metricsDF = pd.DataFrame({'Property' : [], 'Model':[], 'Best_Band':[], 'PLSR N C
                           'EV Train PLSR': [], 'EV CV PLSR': [], 'EV Test PLSR': []
                           })
 
-
-
-compuesto = otrosCompuestos[0]
-for compuesto in otrosCompuestos:
-    
-    
     trainFName =args.data + 'Train_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
     testFName = args.data + 'Test_minmax_d1d2_fft_feature_' + str(compuesto) + '.csv'
     
@@ -144,9 +159,23 @@ for compuesto in otrosCompuestos:
     trainDF = pd.read_csv(trainFName, sep = ';')
     testDF.rename(columns={str(compuesto):'Class'}, inplace=True)
     trainDF.rename(columns={str(compuesto):'Class'}, inplace=True)
-    testDF = testDF.drop(['ID', 'Et_'+ str(compuesto),'sc_' + str(compuesto), 'Sand', 'Clay', 'Silt'], axis=1)
-    trainDF = trainDF.drop(['ID', 'Et_'+ str(compuesto),'sc_' + str(compuesto), 'Sand', 'Clay', 'Silt'], axis=1)
-    
+    testDF = testDF.drop(['ID', 'Et_'+ str(compuesto),'sc_' + str(compuesto)], axis=1)
+    trainDF = trainDF.drop(['ID', 'Et_'+ str(compuesto),'sc_' + str(compuesto)], axis=1)
+
+    if 'Sand' in trainDF.columns:
+        trainDF = trainDF.drop('Sand', axis=1)
+    if 'Silt' in trainDF.columns:
+        trainDF = trainDF.drop('Silt', axis=1)
+    if 'Clay' in trainDF.columns:
+        trainDF = trainDF.drop('Clay', axis=1)
+
+    if 'Sand' in testDF.columns:
+        testDF = testDF.drop('Sand', axis=1)
+    if 'Silt' in testDF.columns:
+        testDF = testDF.drop('Silt', axis=1)
+    if 'Clay' in testDF.columns:
+        testDF = testDF.drop('Clay', axis=1)
+
     crrntPropBands = bestBandMetric.copy()
     crrntPropBands = crrntPropBands[crrntPropBands.property == compuesto]
     crrntPropBands = crrntPropBands.reset_index(drop = True)
@@ -184,25 +213,40 @@ for compuesto in otrosCompuestos:
     
     y_test_plsr = y_test.copy()
     X_test_plsr = X_test.copy()
+    
+    model_band = LinearRegression()
 
     for model_text in av_models:
         if model_text == 'LR':
             model = LinearRegression()
-            model_band = LinearRegression()
+            #model_band = LinearRegression()
             
         if model_text == 'SVR':
             model = SVR(kernel='linear')
-            model_band = SVR(kernel='linear')
+            #model_band = SVR(kernel='linear')
 
         if model_text == 'LASSO':
             model = LassoCV(cv=5, random_state=0, 
                             max_iter = 30000, 
                             verbose = 10,
                             n_jobs = -1)
-            model_band = LassoCV(cv=5, random_state=0, 
-                            max_iter = 30000, 
-                            verbose = 10,
-                            n_jobs = -1)
+            #model_band = LassoCV(cv=5, random_state=0, 
+                            #max_iter = 30000, 
+                            #verbose = 10,
+                            #n_jobs = -1)
+        if model_text == 'Cubist':
+            model = Cubist(composite = True,
+                           n_committees = 15,
+               #neighbors = 2,
+               #cv = 10,
+                           verbose = 1)
+           # model_band = Cubist(composite = True,
+                                #n_committees = 15,
+               #neighbors = 2,
+               #cv = 10,
+                               # verbose = 1)
+
+        regressor = model.fit(X_train, y_train)
     
         scoring = {'mean_squared_error':make_scorer(mean_squared_error),
                    'r2':'r2',
@@ -305,13 +349,13 @@ for compuesto in otrosCompuestos:
                                 explained_variance_score(y_test_plsr, y_prd_test_plsr).round(3),#Exp Var test
                                 ]
             print(crrntPropMetrics)
+            metricsDF.loc[metricsDF.shape[0] + 1] = crrntPropMetrics
             plotName = 'Regression performance on ' + str(compuesto) + ' for test dataset with ' + str(model_text) + ', PLSR ' + str(nc) + ' components' 
             regPlotBest(compuesto, y_test, y_prd_test, y_test_band, y_prd_test_band, y_test_plsr, y_prd_test_plsr, model_text, plotName, nc, "results/", save = True)
 
             plotName = 'Regression performance on ' + str(compuesto) + ' for train dataset with ' + str(model_text) + ', PLSR ' + str(nc) + ' components'
             regPlotBest(compuesto, y_train, y_prd_train , y_train_band, y_prd_train_band, y_train_plsr, y_prd_train_plsr, model_text, plotName, nc, "results/", save = True)
   
-            metricsDF.loc[metricsDF.shape[0] + 1] = crrntPropMetrics
-            metricsDF.to_csv(args.data + '/Regressor-metrics.csv', index=False, header=True, sep = ';', decimal = '.')
+    metricsDF.to_csv('results/' + str(compuesto) + '-regressor-metrics.csv', index=False, header=True, sep = ';', decimal = '.')
 
 

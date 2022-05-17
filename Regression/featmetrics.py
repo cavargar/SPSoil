@@ -85,7 +85,7 @@ for compuesto in otrosCompuestos:
     featureDF['FScore'] = selkf_reg.scores_
     
     #Lasso Importace
-    clf = LassoCV(cv=5, random_state=0,max_iter = 10000, verbose = 10, n_jobs = -1).fit(x_train, y_train_num)
+    clf = LassoCV(cv=5, random_state=0,max_iter = 30000, verbose = 10, n_jobs = -1).fit(x_train, y_train_num)
     featureDF['Lasso_importance'] = np.abs(clf.coef_)
 
     #Correlation
